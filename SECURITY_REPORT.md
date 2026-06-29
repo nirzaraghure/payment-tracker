@@ -1,9 +1,9 @@
 # 🛡️ AppGenius Security Report
 
 **Repository:** `nirzaraghure/payment-tracker`
-**Scan Date:** 6/29/2026, 2:32:25 PM
+**Scan Date:** 6/29/2026, 2:42:14 PM
 **Files Scanned:** 5
-**Issues Found:** 6
+**Issues Found:** 7
 
 ## 📊 Summary
 
@@ -11,67 +11,87 @@
 |----------|-------|
 | 🔴 Critical | 0 |
 | 🟠 High | 2 |
-| 🟡 Medium | 1 |
+| 🟡 Medium | 2 |
 | 🔵 Low | 3 |
 
 ## 🔍 Detailed Findings
 
-### 🟠 1. Missing input validation and sanitization
+### 🔵 1. Lack of input validation in main method
+
+**File:** `PaymentTrackerApplication.java`
+**Type:** Code Quality Issue
+**Severity:** LOW
+
+**Description:**
+The main method does not validate its inputs, which could lead to unexpected behavior or errors.
+
+**Suggested Fix:**
+Add input validation to the main method to ensure it handles unexpected inputs correctly.
+
+**Code Example:**
+```
+public static void main(String[] args) {
+  SpringApplication.run(PaymentTrackerApplication.class, args);
+}
+```
+
+---
+
+### 🟠 2. Missing authentication and authorization
 
 **File:** `PaymentController.java`
 **Type:** Security Vulnerability
 **Severity:** HIGH
 
 **Description:**
-The controller does not validate or sanitize the input from the request body or path variables, which can lead to potential security issues such as SQL injection or cross-site scripting (XSS).
+The PaymentController does not implement authentication and authorization, which could lead to unauthorized access to payment data.
 
 **Suggested Fix:**
-Use Spring's built-in validation and sanitization features, such as @Valid and @Pattern, to ensure that the input is valid and sanitized.
+Implement authentication and authorization mechanisms, such as token-based authentication or role-based access control.
 
 **Code Example:**
 ```
-@PostMapping
-public String addPayment(@RequestBody @Valid Payment payment) {
-
+@RestController
+@RequestMapping("/payments")
+public class PaymentController {
+    ...
+}
 ```
 
 ---
 
-### 🟠 2. Insecure use of user-provided input in business logic
+### 🟡 3. Potential SQL injection vulnerability
+
+**File:** `PaymentController.java`
+**Type:** Security Vulnerability
+**Severity:** MEDIUM
+
+**Description:**
+The PaymentController uses a String parameter (userId) in a SQL-like query, which could lead to a SQL injection vulnerability.
+
+**Suggested Fix:**
+Use a parameterized query or an ORM framework to prevent SQL injection attacks.
+
+**Code Example:**
+```
+public double getTotalPaymentByUser(@PathVariable String userId) {
+    return paymentService.getTotalForUser(userId);
+}
+```
+
+---
+
+### 🟠 4. Insecure data storage
 
 **File:** `PaymentService.java`
 **Type:** Security Vulnerability
 **Severity:** HIGH
 
 **Description:**
-The PaymentService class uses user-provided input (user ID) in its business logic without proper validation or sanitization, which can lead to potential security issues.
+The PaymentService stores payment data in an in-memory list, which could lead to data loss in case of a restart or deployment.
 
 **Suggested Fix:**
-Use a secure method to retrieve the user's ID, such as using a secure authentication mechanism or validating the input before using it in the business logic.
-
-**Code Example:**
-```
-public double getTotalForUser(String userId) {
-    return payments.stream()
-            .filter(p -> p.getUserId().equals(userId))
-            .mapToDouble(Payment::getAmount)
-            .sum();
-}
-```
-
----
-
-### 🟡 3. Missing concurrency control
-
-**File:** `PaymentService.java`
-**Type:** Concurrency Issue
-**Severity:** MEDIUM
-
-**Description:**
-The PaymentService class uses a shared list to store payments, which can lead to concurrency issues if multiple threads try to access the list simultaneously.
-
-**Suggested Fix:**
-Use a thread-safe collection, such as ConcurrentHashMap, or synchronize the access to the shared list.
+Use a persistent storage mechanism, such as a database or a file system, to store payment data securely.
 
 **Code Example:**
 ```
@@ -80,65 +100,67 @@ private final List<Payment> payments = new ArrayList<>();
 
 ---
 
-### 🔵 4. Missing error handling
+### 🟡 5. Potential data corruption
 
-**File:** `PaymentTrackerApplication.java`
-**Type:** Error Handling
-**Severity:** LOW
+**File:** `PaymentService.java`
+**Type:** Code Quality Issue
+**Severity:** MEDIUM
 
 **Description:**
-The PaymentTrackerApplication class does not handle any errors that may occur during the execution of the application.
+The PaymentService uses a shared list to store payment data, which could lead to data corruption in a multi-threaded environment.
 
 **Suggested Fix:**
-Add try-catch blocks to handle potential errors and provide meaningful error messages.
+Use a thread-safe data structure or a locking mechanism to prevent data corruption.
 
 **Code Example:**
 ```
-public static void main(String[] args) {
-    SpringApplication.run(PaymentTrackerApplication.class, args);
+public void addPayment(Payment payment) {
+    payments.add(payment);
 }
 ```
 
 ---
 
-### 🔵 5. Missing HTTP status code
+### 🔵 6. Missing equals and hashCode methods
 
-**File:** `PaymentController.java`
-**Type:** Error Handling
+**File:** `Payment.java`
+**Type:** Code Quality Issue
 **Severity:** LOW
 
 **Description:**
-The PaymentController class does not return a meaningful HTTP status code in case of an error.
+The Payment class does not implement equals and hashCode methods, which could lead to issues with collections and caching.
 
 **Suggested Fix:**
-Return a 400 Bad Request status code in case of invalid input or a 500 Internal Server Error status code in case of an unexpected error.
+Implement equals and hashCode methods based on the class's fields.
 
 **Code Example:**
 ```
-@PostMapping
-public String addPayment(@RequestBody Payment payment) {
-
+public class Payment {
+    private String userId;
+    ...
+}
 ```
 
 ---
 
-### 🔵 6. Missing logging
+### 🔵 7. Missing serialization/deserialization methods
 
-**File:** `PaymentController.java`
-**Type:** Logging
+**File:** `Payment.java`
+**Type:** Code Quality Issue
 **Severity:** LOW
 
 **Description:**
-The PaymentController class does not log any information about the requests or responses.
+The Payment class does not implement serialization/deserialization methods, which could lead to issues with marshaling/unmarshaling.
 
 **Suggested Fix:**
-Use a logging framework, such as Log4J or Java Util Logging, to log meaningful information about the requests and responses.
+Implement serialization/deserialization methods based on the class's fields.
 
 **Code Example:**
 ```
-@PostMapping
-public String addPayment(@RequestBody Payment payment) {
-
+public class Payment {
+    private String userId;
+    ...
+}
 ```
 
 ---
