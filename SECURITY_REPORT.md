@@ -1,32 +1,96 @@
 # 🛡️ AppGenius Security Report
 
 **Repository:** `nirzaraghure/payment-tracker`
-**Scan Date:** 6/3/2026, 12:44:22 PM
+**Scan Date:** 6/29/2026, 2:32:25 PM
 **Files Scanned:** 5
-**Issues Found:** 9
+**Issues Found:** 6
 
 ## 📊 Summary
 
 | Severity | Count |
 |----------|-------|
 | 🔴 Critical | 0 |
-| 🟠 High | 5 |
-| 🟡 Medium | 4 |
-| 🔵 Low | 0 |
+| 🟠 High | 2 |
+| 🟡 Medium | 1 |
+| 🔵 Low | 3 |
 
 ## 🔍 Detailed Findings
 
-### 🟠 1. Lack of input validation in main method
+### 🟠 1. Missing input validation and sanitization
 
-**File:** `PaymentTrackerApplication.java`
+**File:** `PaymentController.java`
 **Type:** Security Vulnerability
 **Severity:** HIGH
 
 **Description:**
-The main method does not validate the arguments passed to it, making it vulnerable to potential attacks
+The controller does not validate or sanitize the input from the request body or path variables, which can lead to potential security issues such as SQL injection or cross-site scripting (XSS).
 
 **Suggested Fix:**
-Add input validation to the main method to ensure it only accepts authorized inputs
+Use Spring's built-in validation and sanitization features, such as @Valid and @Pattern, to ensure that the input is valid and sanitized.
+
+**Code Example:**
+```
+@PostMapping
+public String addPayment(@RequestBody @Valid Payment payment) {
+
+```
+
+---
+
+### 🟠 2. Insecure use of user-provided input in business logic
+
+**File:** `PaymentService.java`
+**Type:** Security Vulnerability
+**Severity:** HIGH
+
+**Description:**
+The PaymentService class uses user-provided input (user ID) in its business logic without proper validation or sanitization, which can lead to potential security issues.
+
+**Suggested Fix:**
+Use a secure method to retrieve the user's ID, such as using a secure authentication mechanism or validating the input before using it in the business logic.
+
+**Code Example:**
+```
+public double getTotalForUser(String userId) {
+    return payments.stream()
+            .filter(p -> p.getUserId().equals(userId))
+            .mapToDouble(Payment::getAmount)
+            .sum();
+}
+```
+
+---
+
+### 🟡 3. Missing concurrency control
+
+**File:** `PaymentService.java`
+**Type:** Concurrency Issue
+**Severity:** MEDIUM
+
+**Description:**
+The PaymentService class uses a shared list to store payments, which can lead to concurrency issues if multiple threads try to access the list simultaneously.
+
+**Suggested Fix:**
+Use a thread-safe collection, such as ConcurrentHashMap, or synchronize the access to the shared list.
+
+**Code Example:**
+```
+private final List<Payment> payments = new ArrayList<>();
+```
+
+---
+
+### 🔵 4. Missing error handling
+
+**File:** `PaymentTrackerApplication.java`
+**Type:** Error Handling
+**Severity:** LOW
+
+**Description:**
+The PaymentTrackerApplication class does not handle any errors that may occur during the execution of the application.
+
+**Suggested Fix:**
+Add try-catch blocks to handle potential errors and provide meaningful error messages.
 
 **Code Example:**
 ```
@@ -37,171 +101,44 @@ public static void main(String[] args) {
 
 ---
 
-### 🟡 2. Use of @Autowired for controller dependencies
+### 🔵 5. Missing HTTP status code
 
 **File:** `PaymentController.java`
-**Type:** Bad Practice
-**Severity:** MEDIUM
+**Type:** Error Handling
+**Severity:** LOW
 
 **Description:**
-The @Autowired annotation is used to inject dependencies into the controller, which can lead to tight coupling
+The PaymentController class does not return a meaningful HTTP status code in case of an error.
 
 **Suggested Fix:**
-Use constructor injection or method injection to inject dependencies into the controller
-
-**Code Example:**
-```
-@Autowired
-private PaymentService paymentService;
-```
-
----
-
-### 🟠 3. Missing validation for payment data
-
-**File:** `PaymentController.java`
-**Type:** Security Vulnerability
-**Severity:** HIGH
-
-**Description:**
-The addPayment method does not validate the payment data before adding it to the database
-
-**Suggested Fix:**
-Add validation to the addPayment method to ensure it only accepts valid payment data
+Return a 400 Bad Request status code in case of invalid input or a 500 Internal Server Error status code in case of an unexpected error.
 
 **Code Example:**
 ```
 @PostMapping
 public String addPayment(@RequestBody Payment payment) {
-    paymentService.addPayment(payment);
-    return "Payment added successfully!";
-}
+
 ```
 
 ---
 
-### 🟡 4. Use of get-methods for accessing payment data
+### 🔵 6. Missing logging
 
 **File:** `PaymentController.java`
-**Type:** Bad Practice
-**Severity:** MEDIUM
+**Type:** Logging
+**Severity:** LOW
 
 **Description:**
-The get-methods for accessing payment data can be replaced with the direct field access for better performance
+The PaymentController class does not log any information about the requests or responses.
 
 **Suggested Fix:**
-Replace get-methods with direct field access for accessing payment data
+Use a logging framework, such as Log4J or Java Util Logging, to log meaningful information about the requests and responses.
 
 **Code Example:**
 ```
-public List<Payment> getAllPayments() {
-    return paymentService.getAllPayments();
-}
-```
+@PostMapping
+public String addPayment(@RequestBody Payment payment) {
 
----
-
-### 🟠 5. Missing validation for userId in getTotalPaymentByUser method
-
-**File:** `PaymentController.java`
-**Type:** Security Vulnerability
-**Severity:** HIGH
-
-**Description:**
-The getTotalPaymentByUser method does not validate the userId before calculating the total payment
-
-**Suggested Fix:**
-Add validation to the getTotalPaymentByUser method to ensure it only accepts valid userId
-
-**Code Example:**
-```
-@GetMapping("/{userId}/total")
-public double getTotalPaymentByUser(@PathVariable String userId) {
-    return paymentService.getTotalForUser(userId);
-}
-```
-
----
-
-### 🟠 6. Use of in-memory storage for payments
-
-**File:** `PaymentService.java`
-**Type:** Security Vulnerability
-**Severity:** HIGH
-
-**Description:**
-The PaymentService class uses an in-memory storage for payments, which can lead to data loss in case of application restart
-
-**Suggested Fix:**
-Replace in-memory storage with a persistent storage mechanism
-
-**Code Example:**
-```
-private final List<Payment> payments = new ArrayList<>();
-```
-
----
-
-### 🟡 7. Use of get-methods for accessing payment data
-
-**File:** `PaymentService.java`
-**Type:** Bad Practice
-**Severity:** MEDIUM
-
-**Description:**
-The get-methods for accessing payment data can be replaced with the direct field access for better performance
-
-**Suggested Fix:**
-Replace get-methods with direct field access for accessing payment data
-
-**Code Example:**
-```
-public List<Payment> getAllPayments() {
-    return payments;
-}
-```
-
----
-
-### 🟡 8. Use of primitive types for amount
-
-**File:** `Payment.java`
-**Type:** Bad Practice
-**Severity:** MEDIUM
-
-**Description:**
-The Payment class uses a primitive type for amount, which can lead to issues with decimal numbers
-
-**Suggested Fix:**
-Replace primitive type with a Decimal type for amount
-
-**Code Example:**
-```
-private double amount;
-```
-
----
-
-### 🟠 9. Lack of validation for payment data
-
-**File:** `Payment.java`
-**Type:** Security Vulnerability
-**Severity:** HIGH
-
-**Description:**
-The Payment class does not validate the payment data before creating a new payment object
-
-**Suggested Fix:**
-Add validation to the Payment class to ensure it only accepts valid payment data
-
-**Code Example:**
-```
-public Payment() {}
-public Payment(String userId, double amount, String timestamp) {
-    this.userId = userId;
-    this.amount = amount;
-    this.timestamp = timestamp;
-}
 ```
 
 ---
