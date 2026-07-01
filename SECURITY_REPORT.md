@@ -1,167 +1,144 @@
 # 🛡️ AppGenius Security Report
 
 **Repository:** `nirzaraghure/payment-tracker`
-**Scan Date:** 6/29/2026, 2:42:14 PM
+**Scan Date:** 7/1/2026, 11:39:04 AM
 **Files Scanned:** 5
-**Issues Found:** 7
+**Issues Found:** 9
 
 ## 📊 Summary
 
 | Severity | Count |
 |----------|-------|
 | 🔴 Critical | 0 |
-| 🟠 High | 2 |
-| 🟡 Medium | 2 |
-| 🔵 Low | 3 |
+| 🟠 High | 5 |
+| 🟡 Medium | 4 |
+| 🔵 Low | 0 |
 
 ## 🔍 Detailed Findings
 
-### 🔵 1. Lack of input validation in main method
+### 🟠 1. Missing security headers
 
 **File:** `PaymentTrackerApplication.java`
-**Type:** Code Quality Issue
-**Severity:** LOW
-
-**Description:**
-The main method does not validate its inputs, which could lead to unexpected behavior or errors.
-
-**Suggested Fix:**
-Add input validation to the main method to ensure it handles unexpected inputs correctly.
-
-**Code Example:**
-```
-public static void main(String[] args) {
-  SpringApplication.run(PaymentTrackerApplication.class, args);
-}
-```
-
----
-
-### 🟠 2. Missing authentication and authorization
-
-**File:** `PaymentController.java`
-**Type:** Security Vulnerability
+**Type:** Security
 **Severity:** HIGH
 
 **Description:**
-The PaymentController does not implement authentication and authorization, which could lead to unauthorized access to payment data.
+The application is missing security headers such as Content-Security-Policy, X-Frame-Options, etc.
 
 **Suggested Fix:**
-Implement authentication and authorization mechanisms, such as token-based authentication or role-based access control.
-
-**Code Example:**
-```
-@RestController
-@RequestMapping("/payments")
-public class PaymentController {
-    ...
-}
-```
+Add security headers in web.xml or application.properties file
 
 ---
 
-### 🟡 3. Potential SQL injection vulnerability
+### 🟠 2. Missing input validation
 
 **File:** `PaymentController.java`
-**Type:** Security Vulnerability
-**Severity:** MEDIUM
-
-**Description:**
-The PaymentController uses a String parameter (userId) in a SQL-like query, which could lead to a SQL injection vulnerability.
-
-**Suggested Fix:**
-Use a parameterized query or an ORM framework to prevent SQL injection attacks.
-
-**Code Example:**
-```
-public double getTotalPaymentByUser(@PathVariable String userId) {
-    return paymentService.getTotalForUser(userId);
-}
-```
-
----
-
-### 🟠 4. Insecure data storage
-
-**File:** `PaymentService.java`
-**Type:** Security Vulnerability
+**Type:** Security
 **Severity:** HIGH
 
 **Description:**
-The PaymentService stores payment data in an in-memory list, which could lead to data loss in case of a restart or deployment.
+The controller method addPayment does not validate the input payment object
 
 **Suggested Fix:**
-Use a persistent storage mechanism, such as a database or a file system, to store payment data securely.
-
-**Code Example:**
-```
-private final List<Payment> payments = new ArrayList<>();
-```
+Add input validation for payment object
 
 ---
 
-### 🟡 5. Potential data corruption
+### 🟡 3. Missing error handling
 
-**File:** `PaymentService.java`
-**Type:** Code Quality Issue
+**File:** `PaymentController.java`
+**Type:** Best Practice
 **Severity:** MEDIUM
 
 **Description:**
-The PaymentService uses a shared list to store payment data, which could lead to data corruption in a multi-threaded environment.
+The controller method getAllPayments does not handle potential errors such as database connection errors
 
 **Suggested Fix:**
-Use a thread-safe data structure or a locking mechanism to prevent data corruption.
-
-**Code Example:**
-```
-public void addPayment(Payment payment) {
-    payments.add(payment);
-}
-```
+Add try-catch block to handle potential errors
 
 ---
 
-### 🔵 6. Missing equals and hashCode methods
+### 🟠 4. Missing authentication and authorization
 
-**File:** `Payment.java`
-**Type:** Code Quality Issue
-**Severity:** LOW
+**File:** `PaymentController.java`
+**Type:** Security
+**Severity:** HIGH
 
 **Description:**
-The Payment class does not implement equals and hashCode methods, which could lead to issues with collections and caching.
+The controller methods do not implement authentication and authorization
 
 **Suggested Fix:**
-Implement equals and hashCode methods based on the class's fields.
-
-**Code Example:**
-```
-public class Payment {
-    private String userId;
-    ...
-}
-```
+Implement authentication and authorization using Spring Security
 
 ---
 
-### 🔵 7. Missing serialization/deserialization methods
+### 🟡 5. Missing validation annotations
 
 **File:** `Payment.java`
-**Type:** Code Quality Issue
-**Severity:** LOW
+**Type:** Best Practice
+**Severity:** MEDIUM
 
 **Description:**
-The Payment class does not implement serialization/deserialization methods, which could lead to issues with marshaling/unmarshaling.
+The Payment class does not use validation annotations such as @NotNull, @NotEmpty, etc.
 
 **Suggested Fix:**
-Implement serialization/deserialization methods based on the class's fields.
+Add validation annotations to Payment class
 
-**Code Example:**
-```
-public class Payment {
-    private String userId;
-    ...
-}
-```
+---
+
+### 🟡 6. Missing transaction management
+
+**File:** `PaymentService.java`
+**Type:** Best Practice
+**Severity:** MEDIUM
+
+**Description:**
+The PaymentService class does not use transaction management
+
+**Suggested Fix:**
+Use transaction management for database operations
+
+---
+
+### 🟠 7. Vulnerability to SQL injection
+
+**File:** `PaymentService.java`
+**Type:** Security
+**Severity:** HIGH
+
+**Description:**
+The getTotalForUser method uses string concatenation to build a query, making it vulnerable to SQL injection
+
+**Suggested Fix:**
+Use parameterized query or Spring Data JPA
+
+---
+
+### 🟠 8. Vulnerability to memory exhaustion
+
+**File:** `PaymentService.java`
+**Type:** Security
+**Severity:** HIGH
+
+**Description:**
+The addPayment method stores all payments in memory, making it vulnerable to memory exhaustion
+
+**Suggested Fix:**
+Use a database or a more efficient storage mechanism
+
+---
+
+### 🟡 9. Missing test coverage
+
+**File:** `PaymentTrackerApplicationTests.java`
+**Type:** Best Practice
+**Severity:** MEDIUM
+
+**Description:**
+The test class does not cover all branches and scenarios
+
+**Suggested Fix:**
+Add more test cases to cover all branches and scenarios
 
 ---
 
